@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Tardigrade Tumble</title>
+<meta name="description" content="Hop a tardigrade (water bear) over holes in the moss across 20 levels. Play free in your browser!">
+<meta name="theme-color" content="#2b6450">
+<!-- Open Graph / link preview thumbnail -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tardigrade Tumble">
+<meta property="og:description" content="Hop a water bear over holes in the moss across 20 levels — play free in your browser!">
+<meta property="og:url" content="https://theuri.github.io/tardigrade-tumble/">
+<meta property="og:image" content="https://theuri.github.io/tardigrade-tumble/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="675">
+<meta property="og:image:alt" content="Tardigrade Tumble — a water bear hopping over moss holes">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tardigrade Tumble">
+<meta name="twitter:description" content="Hop a water bear over holes in the moss across 20 levels — play free!">
+<meta name="twitter:image" content="https://theuri.github.io/tardigrade-tumble/og.jpg">
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#0c1418;
     background:radial-gradient(circle at 50% 30%, #16323a, #0a1014 70%);
@@ -26,7 +41,9 @@ const ctx=canvas.getContext('2d');
 const dpr=Math.min(window.devicePixelRatio||1,2);
 canvas.width=W*dpr; canvas.height=H*dpr;
 ctx.setTransform(dpr,0,0,dpr,0,0);
+const OG = location.search.indexOf('og')>=0;   // ?og → render the link-preview thumbnail full-bleed
 function resize(){
+  if(OG){ canvas.style.width='100vw'; canvas.style.height='100vh'; canvas.style.borderRadius='0'; canvas.style.boxShadow='none'; return; }
   const s=Math.min(window.innerWidth/W, window.innerHeight/H)*0.98;
   canvas.style.width=(W*s)+'px';
   canvas.style.height=(H*s)+'px';
@@ -722,6 +739,41 @@ function drawIdleTardi(x,groundY,scale){
   ctx.restore();
 }
 
+// ============================================================ title attract-demo + OG thumbnail
+const TITLE_HOLES=[{x0:250,x1:298},{x0:700,x1:748}];
+const TITLE_PLATS=[{x0:-40,x1:250},{x0:298,x1:700},{x0:748,x1:W+40}];
+TITLE_PLATS.forEach((p,i)=>{ p.deco=platDeco(mulberry32(700+i*53), p.x1-p.x0); });
+const OG_DECO=[platDeco(mulberry32(8101),320), platDeco(mulberry32(8102),W)];
+let titleX=-50;
+function drawTitleGround(){ drawSoil(0); for(const h of TITLE_HOLES) drawPit(h.x0,h.x1); for(const p of TITLE_PLATS) drawMossCap(p,0); }
+function titleJumpY(x){ let jy=0,pr=0,act=false; for(const h of TITLE_HOLES){ const c=(h.x0+h.x1)/2, JW=80;
+    if(x>=c-JW&&x<=c+JW){ const p=(x-(c-JW))/(2*JW), yv=Math.sin(p*Math.PI)*76; if(yv>jy){ jy=yv; pr=p; act=true; } } }
+  return {jy,pr,act}; }
+function drawWalkDemo(){            // tardigrade walks across the title moss, hopping the holes
+  titleX+=2.4; if(titleX>W+50) titleX=-50;
+  const j=titleJumpY(titleX), grounded=j.jy<2, y=GROUND_Y-j.jy, vy=grounded?0:(j.pr<0.5?-8:8);
+  const co=currentColorObj();
+  if(grounded){ ctx.fillStyle='rgba(0,0,0,0.18)'; ctx.beginPath(); ctx.ellipse(titleX,GROUND_Y+6,28,7,0,0,7); ctx.fill(); }
+  ctx.save(); ctx.translate(titleX,y); ctx.scale(1.05,1.05);
+  drawTardi(0,0,{colorId:co.id,base:co.base,hat:prog.hat,walkPhase:titleX*1.8,grounded,vy,squash:0,dead:false,deadFrame:0,won:false,t:frame});
+  ctx.restore();
+}
+function renderOG(){               // link-preview thumbnail (rendered full-bleed via ?og)
+  drawBackgroundReal(80); drawSoilReal(0);
+  drawPitReal(250,300);
+  drawMossCapReal({x0:-40,x1:250,deco:OG_DECO[0]},0);
+  drawMossCapReal({x0:300,x1:W+40,deco:OG_DECO[1]},0);
+  vignette(0.32);
+  const sx=475,sy=250; const gg=ctx.createRadialGradient(sx,sy,1,sx,sy,20); gg.addColorStop(0,'rgba(190,255,150,0.8)'); gg.addColorStop(1,'rgba(190,255,150,0)'); ctx.fillStyle=gg; dot(sx,sy,20); drawDroplet(sx,sy,8,[206,240,150]);
+  ctx.save(); ctx.translate(275,GROUND_Y-58); ctx.scale(2.5,2.5);
+  drawTardiReal(0,0,{colorId:'green',base:'#7cc36a',hat:'none',walkPhase:30,grounded:false,vy:-7,squash:-0.25,dead:false,deadFrame:0,won:false,t:18});
+  ctx.restore();
+  bouncyTitle('TARDIGRADE',W/2,96,70); bouncyTitle('TUMBLE',W/2,168,70);
+  ctx.font='800 24px "Trebuchet MS",Verdana,sans-serif'; const tg='Hop a water bear across 20 levels!', tw=ctx.measureText(tg).width;
+  rr(W/2-tw/2-18,468,tw+36,40,20); ctx.fillStyle='rgba(18,38,28,0.72)'; ctx.fill();
+  text(tg,W/2,489,{size:24,color:'#ffe45e',align:'center',baseline:'middle',weight:800,outline:4,oc:'#1d3b1f'});
+}
+
 // ============================================================ UI primitives
 function uiButton(x,y,w,h,label,id,o){ o=o||{};
   const hov=mouse.x>=x&&mouse.x<=x+w&&mouse.y>=y&&mouse.y<=y+h;
@@ -780,9 +832,9 @@ function bouncyTitle(t,cx,y,size){
     ctx.fillStyle=i%2?'#8fd167':'#ffe45e'; ctx.fillText(ch,x,y+off); x+=ws[i]; }
 }
 function renderTitle(){
-  drawBackground(frame*0.4); drawFlatGround();
+  drawBackground(frame*0.4); drawTitleGround();
   if(REAL()) vignette(0.34);
-  drawIdleTardi(TARDI_X+30,GROUND_Y,1.15);
+  drawWalkDemo();
   bouncyTitle('TARDIGRADE',W/2,118,72);
   bouncyTitle('TUMBLE',W/2,196,72);
   text('Hop the holes in the moss!  Press SPACE or  ↑  to jump.',W/2,250,{size:21,color:'#1d3b1f',align:'center',weight:700,outline:4,oc:'#dff7ec'});
@@ -966,6 +1018,7 @@ function render(){
   else if(screen==='play'){ renderPlayScene(); drawHUD(); if(paused) drawPauseOverlay(); }
   else if(screen==='complete'){ renderPlayScene(); drawCompleteOverlay(); }
   else if(screen==='fail'){ renderPlayScene(); drawFailOverlay(); }
+  else if(screen==='og') renderOG();
 }
 
 // ============================================================ input
@@ -1021,6 +1074,7 @@ window.addEventListener('keydown',e=>{ initAudio(); const k=e.key;
 });
 
 // ============================================================ main loop
+if(OG) screen='og';   // render the static link-preview thumbnail
 function loop(){ update(); render(); requestAnimationFrame(loop); }
 requestAnimationFrame(loop);
 })();
