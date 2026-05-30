@@ -760,13 +760,13 @@ function drawWalkDemo(){            // tardigrade walks across the title moss, h
 }
 function renderOG(){               // link-preview thumbnail (rendered full-bleed via ?og)
   drawBackgroundReal(80); drawSoilReal(0);
-  drawPitReal(250,300);
-  drawMossCapReal({x0:-40,x1:250,deco:OG_DECO[0]},0);
-  drawMossCapReal({x0:300,x1:W+40,deco:OG_DECO[1]},0);
+  drawPitReal(202,258);
+  drawMossCapReal({x0:-40,x1:202,deco:OG_DECO[0]},0);
+  drawMossCapReal({x0:258,x1:W+40,deco:OG_DECO[1]},0);
   vignette(0.32);
-  const sx=475,sy=250; const gg=ctx.createRadialGradient(sx,sy,1,sx,sy,20); gg.addColorStop(0,'rgba(190,255,150,0.8)'); gg.addColorStop(1,'rgba(190,255,150,0)'); ctx.fillStyle=gg; dot(sx,sy,20); drawDroplet(sx,sy,8,[206,240,150]);
-  ctx.save(); ctx.translate(275,GROUND_Y-58); ctx.scale(2.5,2.5);
-  drawTardiReal(0,0,{colorId:'green',base:'#7cc36a',hat:'none',walkPhase:30,grounded:false,vy:-7,squash:-0.25,dead:false,deadFrame:0,won:false,t:18});
+  const sx=452,sy=232; const gg=ctx.createRadialGradient(sx,sy,1,sx,sy,20); gg.addColorStop(0,'rgba(190,255,150,0.8)'); gg.addColorStop(1,'rgba(190,255,150,0)'); ctx.fillStyle=gg; dot(sx,sy,20); drawDroplet(sx,sy,8,[206,240,150]);
+  ctx.save(); ctx.translate(232,GROUND_Y-110); ctx.scale(2.25,2.25);   // raised higher over the hole
+  drawTardiReal(0,0,{colorId:'green',base:'#7cc36a',hat:'none',walkPhase:30,grounded:false,vy:-8,squash:-0.3,dead:false,deadFrame:0,won:false,t:18});
   ctx.restore();
   bouncyTitle('TARDIGRADE',W/2,96,70); bouncyTitle('TUMBLE',W/2,168,70);
   ctx.font='800 24px "Trebuchet MS",Verdana,sans-serif'; const tg='Hop a water bear across 20 levels!', tw=ctx.measureText(tg).width;
